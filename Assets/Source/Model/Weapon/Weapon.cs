@@ -7,13 +7,12 @@ public abstract class Weapon
 
     protected readonly Transform PositionWeapon;
     protected readonly int Damage;
-    protected readonly float BulletDistanse;
 
     private readonly int _bulletCount;
 
-    public event Action<Bullet,Vector3,Vector3> onShoot;
+    public event Action<Bullet,Transform> onShoot;
 
-    protected Weapon(Transform weapon, float BulletDistanse, int damage, float bulletPerSecond, int numberBullet = 1)
+    protected Weapon(Transform weapon, int damage, float bulletPerSecond, int numberBullet = 1)
     {
         PositionWeapon = weapon;
         Damage = damage;
@@ -21,12 +20,12 @@ public abstract class Weapon
         _bulletCount = numberBullet;
     }
 
-    public void Shoot(Vector3 mouseWorldPosition)
+    public void Shoot()
     {
         for (int i = 0; i < _bulletCount; i++)
-            onShoot?.Invoke(GetBullet(),PositionWeapon.position,(mouseWorldPosition - PositionWeapon.position).normalized);
+            onShoot?.Invoke(GetBullet(),PositionWeapon);
     }
 
     protected virtual Bullet GetBullet()
-    => new DefoltBullet(Damage,BulletDistanse);
+    => new DefoltBullet(Damage);
 }

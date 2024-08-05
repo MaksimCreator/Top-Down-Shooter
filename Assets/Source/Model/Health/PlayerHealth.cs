@@ -1,8 +1,12 @@
-﻿public sealed class PlayerHealth : Health
+﻿using System;
+
+public sealed class PlayerHealth : Health
 {
     private bool _isInvulnerability = false;
 
-    public PlayerHealth(int cutrentHealth, Entity model) : base(cutrentHealth, model)
+    public event Action onDeath;
+
+    public PlayerHealth(int cutrentHealth) : base(cutrentHealth)
     {
     }
 
@@ -15,6 +19,9 @@
     public new void Death()
     {
         if (_isInvulnerability == false)
-            base.Death();
+            OnDeath();
     }
+
+    protected override void OnDeath()
+    => onDeath?.Invoke();
 }

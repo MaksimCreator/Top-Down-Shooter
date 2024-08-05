@@ -29,8 +29,11 @@ public class Fsm
 
     }
 
-    public void AddState(FsmState state)
-    => _states.TryAdd(state.GetType(), state);
+    public Fsm BindState(FsmState state)
+    { 
+        _states.TryAdd(state.GetType(), state);
+        return this;
+    }
 
     public void Update()
     => _curentState.Update();

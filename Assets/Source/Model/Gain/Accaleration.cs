@@ -1,12 +1,9 @@
 ﻿public sealed class Accaleration : Gain
 {
-    public readonly Player _player;
-
-    public Accaleration(Player player,float cooldown) : base(cooldown)
+    public Accaleration(float cooldown) : base(cooldown)
     {
-        _player = player;
     }
 
-    public override void Active()
-    => _player.StartGainAcceleration(Cooldown);
+    public override void Active(Player player)
+    => player.StartGainAcceleration(Cooldown);
 }

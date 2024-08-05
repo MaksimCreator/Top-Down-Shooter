@@ -6,28 +6,14 @@ public class BulletViewFactory : ViewFactroy<Bullet>
     [SerializeField] private GameObject _explosiveBullet;
 
     private BulletVisiter _visiter;
-    private Bullet _curentBullet;
 
     private void Awake()
     => _visiter = new BulletVisiter(_defoltBullet, _explosiveBullet);
 
     protected override GameObject GetTemplay(Bullet prefab)
     {
-        _curentBullet = prefab;
         _visiter.Visit((dynamic)(prefab));
         return _visiter.Prefab;
-    }
-
-    protected override Quaternion GetQuaternion(Transform transformWorldSpace)
-    {
-        if (_curentBullet is ShotgunBullet bullet == false)
-            return base.GetQuaternion(transformWorldSpace);
-
-        Quaternion StartRotation = transformWorldSpace.rotation;
-        transformWorldSpace.Rotate(Vector3.up, bullet.AngelBullet);
-        Quaternion rotation = transformWorldSpace.rotation;
-        transformWorldSpace.rotation = StartRotation;
-        return rotation;
     }
 
     private class BulletVisiter : IBulletVisiter

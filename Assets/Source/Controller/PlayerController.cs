@@ -4,11 +4,12 @@ using System.Numerics;
 public class PlayerController
 {
     private readonly Fsm _fsmPlayer;
-    private readonly PlayerMoveming _movemeng;
+    private readonly PlayerMovemeng _movemeng;
 
-    public PlayerController(Fsm player)
+    public PlayerController(Fsm player,PlayerMovemeng movemeng)
     {
         _fsmPlayer = player;
+        _movemeng = movemeng;
     }
 
     public void Move(float delta,Vector2 direction)

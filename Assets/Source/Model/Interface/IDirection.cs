@@ -2,5 +2,5 @@
 
 public interface IDirection
 {
-    Vector2 Direction { get; }
+    Vector3 Direction { get; }
 }

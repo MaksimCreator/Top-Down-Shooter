@@ -2,13 +2,15 @@
 
 public class Shotgun : Weapon
 {
-    private float _angelBullet;
+    private readonly float _angelBullet;
+    private readonly float _bulletDistance;
 
-    public Shotgun(Transform weapon,float angelBullet, float bulletDistanse, int damage, float bulletPerSecond, int numberBullet) : base(weapon,bulletDistanse, damage, bulletPerSecond, numberBullet)
+    public Shotgun(Transform weapon,float angelBullet, float bulletDistance, int damage, float bulletPerSecond, int numberBullet) : base(weapon, damage, bulletPerSecond, numberBullet)
     {
         _angelBullet = angelBullet;
+        _bulletDistance = bulletDistance;
     }
 
     protected override Bullet GetBullet()
-    => new ShotgunBullet(_angelBullet, Damage, BulletDistanse);
+    => new ShotgunBullet(_angelBullet, Damage, _bulletDistance);
 }

@@ -17,6 +17,12 @@
         Timer.StartTimer(coolDown, () => Speed = curentSpeed);
     }
 
+    public void StartGainInvulnerability(float coolDown)
+    { 
+        _health.SetInvulnerability(true);
+        Timer.StartTimer(coolDown, () => _health.SetInvulnerability(false));
+    } 
+
     public void EnterSlowDown()
     => Speed *= Constant.ZoneEnterSlowDown;
 

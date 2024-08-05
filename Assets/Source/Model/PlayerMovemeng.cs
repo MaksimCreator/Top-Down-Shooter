@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public class PlayerMoveming : IDirection
+public class PlayerMovemeng : IDirection,IRotation
 {
     private readonly float _rotationPerSecond;
     private readonly ISpeed _player; 
@@ -9,7 +9,7 @@ public class PlayerMoveming : IDirection
 
     private Vector2 _direction;
     
-    public Vector2 Direction
+    public Vector3 Direction
     {
         get
         {
@@ -20,7 +20,7 @@ public class PlayerMoveming : IDirection
     }
     public Vector2 Rotation { get; }
 
-    public PlayerMoveming(float rotationPerSecond,Fsm playerRotate,Player player)
+    public PlayerMovemeng(float rotationPerSecond,Fsm playerRotate,Player player)
     {
         _rotationPerSecond = rotationPerSecond;
         _playerRotate = playerRotate;
@@ -51,27 +51,12 @@ public class PlayerMoveming : IDirection
 
     }
 }
-public class FsmStateMovemeng : FsmState
-{
-    private readonly IDirection _direction;
-
-    public FsmStateMovemeng(IDirection direction,Fsm fsm) : base(fsm)
-    {
-        _direction = direction;
-    }
-}
-public class FsmStateRotate : FsmState
+public class FsmStateRotate: FsmState
 {
     private readonly IRotation _rotate;
 
     public FsmStateRotate(IRotation rotate,Fsm fsm) : base(fsm)
     {
         _rotate = rotate;
-    }
-}
-public class FsmStateIdel : FsmState
-{
-    public FsmStateIdel(Fsm fsm) : base(fsm)
-    {
     }
 }

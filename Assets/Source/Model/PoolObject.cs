@@ -2,13 +2,15 @@
 using System;
 using UnityEngine;
 
-public abstract class PoolObject<T> where T : class
+public class PoolObject<T> where T : class
 {
     private readonly List<T> _poolModel = new();
     private readonly List<GameObject> _poolGameObject = new();
     private readonly List<Transform> _poolTransform = new();
 
-    protected void AddObject(T model, GameObject prefab)
+    public event Action<T,Transform> onInstantiat;
+
+    public void AddObject(T model, GameObject prefab)
     {
         prefab.SetActive(false);
         _poolModel.Add(model);
@@ -16,24 +18,27 @@ public abstract class PoolObject<T> where T : class
         _poolTransform.Add(prefab.transform);
     }
 
-    protected T Enable(Vector3 position)
+    public (T,GameObject) Enable(T prefab,Transform transform)
     {
         for (int i = 0; i < _poolTransform.Count; i++)
         {
             if (_poolGameObject[i].activeSelf == false)
             {
-                _poolTransform[i].position = position;
+                _poolTransform[i].position = transform.position;
                 _poolGameObject[i].SetActive(true);
-                return _poolModel[i];
+                return (_poolModel[i], _poolGameObject[i]);
             }
         }
 
-        (T,GameObject) pair = Instantiat();
-        AddObject(pair.Item1, pair.Item2);
+        int Count = _poolGameObject.Count;
+        onInstantiat.Invoke(prefab,transform);
 
-        _poolTransform[_poolTransform.Count - 1].position = position;
+        if (Count == _poolModel.Count)
+            throw new InvalidOperationException("Новый обект недобавлен в PoolObject");
+
+        _poolTransform[_poolTransform.Count - 1].position = transform.position;
         _poolGameObject[_poolGameObject.Count - 1].SetActive(true);
-        return _poolModel[_poolGameObject.Count - 1];
+        return(_poolModel[_poolGameObject.Count - 1], _poolGameObject[_poolGameObject.Count - 1]);
     }
 
     public void Disable(T model)
@@ -49,6 +54,4 @@ public abstract class PoolObject<T> where T : class
 
         throw new InvalidOperationException();
     }
-
-    protected abstract (T,GameObject) Instantiat(); 
 }

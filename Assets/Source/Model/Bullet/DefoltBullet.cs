@@ -1,6 +1,6 @@
 ﻿public class DefoltBullet : Bullet
 {
-    public DefoltBullet(int damage, float bulletDistance) : base(damage, bulletDistance)
+    public DefoltBullet(int damage) : base(damage)
     {
     }
 }

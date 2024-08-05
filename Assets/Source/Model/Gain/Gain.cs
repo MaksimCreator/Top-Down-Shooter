@@ -7,5 +7,5 @@
         Cooldown = cooldown;
     }
 
-    public abstract void Active();
+    public abstract void Active(Player plaery);
 }

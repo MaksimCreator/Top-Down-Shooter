@@ -3,17 +3,18 @@ using UnityEngine;
 
 public class Inventary
 {
-    private Weapon _weapon;
-    private Action<Bullet, Vector3, Vector3> _creatBullet;
+    public Weapon Weapon { get; private set; }
 
-    public Inventary BindWeapon(Weapon weapon,Action<Bullet, Vector3, Vector3> creatBullet)
+    private Action<Bullet, Transform> _creatBullet;
+
+    public Inventary BindWeapon(Weapon weapon,Action<Bullet, Transform> creatBullet)
     {
         if(_creatBullet != null)
-            _weapon.onShoot -= creatBullet;
+            Weapon.onShoot -= creatBullet;
 
-        _weapon = weapon;
         _creatBullet = creatBullet;
-        _weapon.onShoot += creatBullet;
+        Weapon = weapon;
+        Weapon.onShoot += creatBullet;
 
         return this;
     }
