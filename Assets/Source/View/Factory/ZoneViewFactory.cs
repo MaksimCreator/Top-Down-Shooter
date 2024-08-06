@@ -8,9 +8,9 @@ public class ZoneViewFactory : ViewFactroy<Zone>
 
     protected override GameObject GetTemplay(Zone prefab)
     {
-        if (prefab is SlowDownZone)
+        if (prefab is SlowZone)
             return _slowDownZone;
-        else if (prefab is DeadZone)
+        else if (prefab is DeathZone)
             return _deathZone;
 
         throw new InvalidOperationException();

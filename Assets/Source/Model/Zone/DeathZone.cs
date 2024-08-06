@@ -1,6 +1,6 @@
 using System;
 
-public class DeadZone : Zone
+public class DeathZone : Zone
 {
     protected override void EnterAction(Player player)
     => player.Death();

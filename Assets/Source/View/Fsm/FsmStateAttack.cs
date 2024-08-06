@@ -13,7 +13,7 @@ public class FsmStateAttack : FsmState
     public override void Enter()
     {
         _inventary.Weapon.Shoot();
-        _disposable = Timer.StartInfiniteTimer(_inventary.Weapon.BulletPerSecond, () => _inventary.Weapon.Shoot());
+        _disposable = Timer.StartInfiniteTimer(1 / _inventary.Weapon.BulletPerSecond, () => _inventary.Weapon.Shoot());
     }
 
     public override void Exit()

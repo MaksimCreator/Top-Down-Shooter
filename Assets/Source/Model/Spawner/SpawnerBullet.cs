@@ -18,7 +18,7 @@ public class SpawnerBullet
     {
         _bulletVisiter.Visit((dynamic)bullet);
         (Bullet,GameObject) pair = _bulletVisiter.CurentPoolObject.Enable(bullet,StartPosition);
-        pair.Item2.transform.Rotate(Input.mousePosition);
+        pair.Item2.transform.Rotate(new Vector3(Input.mousePosition.x,pair.Item2.transform.position.y,Input.mousePosition.z));
 
         if (bullet is ShotgunBullet shotgunBullet)
             pair.Item2.transform.rotation = Quaternion.Euler(0, Random.Range(-shotgunBullet.AngelBullet, shotgunBullet.AngelBullet),0);

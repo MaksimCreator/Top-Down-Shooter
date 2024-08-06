@@ -1,11 +1,13 @@
 public class Enemy : Entity
 {
-    private readonly EnemyHealth _health;
+    private EnemyHealth _health;
 
-    public Enemy(EnemyHealth health, float speed) : base(speed)
+    public Enemy(float speed) : base(speed)
     {
-        _health = health;
     }
+
+    public void BindHealth(EnemyHealth health)
+    => _health = health;
 
     public void TakeDamage(int damage)
     => _health.TakeDamage(damage);

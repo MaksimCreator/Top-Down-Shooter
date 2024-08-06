@@ -7,14 +7,19 @@
         _health = health;
     }
 
-    public void Death()
+    public void TryDeath()
     => _health.Death();
+
+    public void Death()
+    {
+        _health.SetInvulnerability(false);
+        _health.Death();
+    }
 
     public void StartGainAcceleration(float coolDown)
     {
-        float curentSpeed = Speed;
-        Speed *= Constant.GainAccaleration;
-        Timer.StartTimer(coolDown, () => Speed = curentSpeed);
+        Speed *= Constant.GainEnterAccaleration;
+        Timer.StartTimer(coolDown, () => Speed /= Constant.GainEnterAccaleration);
     }
 
     public void StartGainInvulnerability(float coolDown)

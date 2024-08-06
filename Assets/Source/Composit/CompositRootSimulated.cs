@@ -14,6 +14,7 @@ public class CompositRootSimulated : CompositRoot
     {
         _simulated.Enqueue(BulletSimulation = new BulletSimulation(new SpawnerBullet(_bulletViewFactory)));
         _simulated.Enqueue(new EnemySimulation());
+
     }
 
     private void Update()

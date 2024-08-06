@@ -37,8 +37,6 @@ public class PlayerMovemeng : IDirection,IRotation
 
         if(y != 0)
             _direction.y = _direction.y * y * _player.Speed * delta;
-
-        Rotate(_direction.y);
     }
 
     public void Update(float delta)

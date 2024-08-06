@@ -1,4 +1,4 @@
-public class SlowDownZone : Zone
+public class SlowZone : Zone
 {
     protected override void EnterAction(Player player)
     => player.EnterSlowDown();
