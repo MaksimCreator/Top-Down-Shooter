@@ -5,7 +5,10 @@ public class Wallet
     private EnemyVisiter _visiter = new();
 
     public void onKill(Enemy enemy)
-    => _visiter.Visit((dynamic)enemy);
+    { 
+        _visiter.Visit((dynamic)enemy);
+        enemy.EnterStateIdel();
+    }
 
     private class EnemyVisiter : IEnemyVisiter
     {

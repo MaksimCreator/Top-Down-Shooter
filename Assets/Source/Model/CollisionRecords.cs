@@ -40,7 +40,7 @@ public class CollisionRecords
             _spawner.Destroy(weapon);
             _spawner.Destroy(_playerInventary.Weapon);
             _spawner.Creat(weapon,_transfomWeapon);
-            _playerInventary.BindWeapon(weapon, _bulletSimulation.Simulate);
+            _playerInventary.BindWeapon(weapon);
         });
     }
 }

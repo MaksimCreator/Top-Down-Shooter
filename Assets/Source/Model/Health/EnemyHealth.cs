@@ -2,11 +2,11 @@
 
 public sealed class EnemyHealth : Health
 {
-    private readonly Entity _entity;
+    private readonly Enemy _entity;
 
-    public event Action<Entity> onDeath;
+    public event Action<Enemy> onDeath;
 
-    public EnemyHealth(int cutrentHealth, Entity model) : base(cutrentHealth)
+    public EnemyHealth(int cutrentHealth, Enemy model) : base(cutrentHealth)
     {
     }
 
@@ -14,5 +14,8 @@ public sealed class EnemyHealth : Health
     => base.TakeDamage(damage);
 
     protected override void OnDeath()
-    => onDeath?.Invoke(_entity);
+    { 
+        onDeath?.Invoke(_entity);
+        
+    }
 }

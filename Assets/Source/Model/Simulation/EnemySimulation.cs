@@ -1,20 +1,24 @@
-﻿public class EnemySimulation : Simulated<Enemy>
+﻿using UnityEngine;
+
+public class EnemySimulation : Simulated<Enemy>
 {
     private readonly SpawnerEnemy _spawner;
 
-    public EnemySimulation(EnemyViewFactory factory, Wallet walletPlayer, float cooldownSpawnEnemy)
+    public EnemySimulation(EnemyViewFactory factory, Wallet walletPlayer,AllSoldier allSoldier,Camera camera,Transform defoltPointSpawn,Transform centerOfTheCircle,Player player,float cooldownUpdateSpawnEnemy,float deltaTimeDelay, float startCooldownSpawnEnemy,float minCooldownSpawn)
     {
-        _spawner = new(this, factory, walletPlayer, cooldownSpawnEnemy);
+        _spawner = new SpawnerEnemy(this, factory,walletPlayer,allSoldier,camera,defoltPointSpawn,
+        centerOfTheCircle,player,cooldownUpdateSpawnEnemy,startCooldownSpawnEnemy,deltaTimeDelay,minCooldownSpawn);
     }
 
-    public void Simulated()
+    public void Simulated(Enemy enemy)
     {
-
+        Simulated(enemy);
     }
 
     public override void Update(float delta)
     {
-        throw new System.NotImplementedException();
+        foreach (var enemy in Entities)
+            enemy.Update(delta);
     }
 
     public void Enable()

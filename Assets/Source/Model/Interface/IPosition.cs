@@ -2,5 +2,5 @@
 
 public interface IPosition
 {
-    Transform Transform { get; }
+    Vector3 Position { get; }
 }

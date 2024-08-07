@@ -1,13 +1,14 @@
 using System;
 using UnityEngine;
 
-public class PlayerMovemeng : IDirection,IRotation
+public class PlayerMovemeng : IDirection,ITargetPosition
 {
-    private readonly float _rotationPerSecond;
-    private readonly ISpeed _player; 
-    private readonly Fsm _playerRotate;
+    private readonly ISpeed _playerSpeed;
+    private readonly IPosition _playerPosition;
+    private readonly Fsm _playerRotate = new();
 
     private Vector2 _direction;
+    private float _deltaTime;
     
     public Vector3 Direction
     {
@@ -18,13 +19,16 @@ public class PlayerMovemeng : IDirection,IRotation
             return direction;
         }
     }
-    public Vector2 Rotation { get; }
+    public Vector3 TargetPosition { get; private set; }
 
-    public PlayerMovemeng(float rotationPerSecond,Fsm playerRotate,Player player)
+    public PlayerMovemeng(float rotationPerSecond,Player player,Transform transformPlayer)
     {
-        _rotationPerSecond = rotationPerSecond;
-        _playerRotate = playerRotate;
-        _player = player;
+        _playerSpeed = player;
+        _playerPosition = player;
+
+        _playerRotate
+            .BindState(new FsmStateIdel(_playerRotate))
+            .BindState(new FsmStateRotate(this,GetDeltaTime,transformPlayer,_playerRotate,rotationPerSecond));
     }
 
     public void Move(float x,float y,float delta)
@@ -33,28 +37,24 @@ public class PlayerMovemeng : IDirection,IRotation
             throw new InvalidOperationException(nameof(delta));
 
         if(x != 0)
-            _direction.x = _direction.x * x * _player.Speed * delta;
+            _direction.x = _direction.x * x * _playerSpeed.Speed * delta;
 
         if(y != 0)
-            _direction.y = _direction.y * y * _player.Speed * delta;
+            _direction.y = _direction.y * y * _playerSpeed.Speed * delta;
     }
 
     public void Update(float delta)
-    {
-
+    { 
+        _deltaTime = delta;
+        _playerRotate.Update();
     }
 
-    public void Rotate(float rotation)
+    public void Rotate(Vector3 target)
     {
-
+        TargetPosition = target;
+        _playerRotate.SetState<FsmStateRotate>();
     }
-}
-public class FsmStateRotate: FsmState
-{
-    private readonly IRotation _rotate;
 
-    public FsmStateRotate(IRotation rotate,Fsm fsm) : base(fsm)
-    {
-        _rotate = rotate;
-    }
+    private float GetDeltaTime()
+    => _deltaTime;
 }

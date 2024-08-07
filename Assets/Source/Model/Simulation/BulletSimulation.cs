@@ -13,9 +13,9 @@ public class BulletSimulation : Simulated<Bullet>
         OnDistroy += Distroy;
     }
 
-    public void Simulate(Bullet bullet, Transform startPosition)
+    public void Simulate(Bullet bullet, Transform startPosition,Vector3 targetPosition)
     {
-        Bullet curentBullet = _spawner.Enable(bullet, startPosition);
+        Bullet curentBullet = _spawner.Enable(bullet, startPosition,targetPosition);
 
         Simulate(curentBullet);
 

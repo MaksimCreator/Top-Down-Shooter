@@ -30,7 +30,7 @@ public class Fsm
     }
 
     public Fsm BindState(FsmState state)
-    { 
+    {
         _states.TryAdd(state.GetType(), state);
         return this;
     }

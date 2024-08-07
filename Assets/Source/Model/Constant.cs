@@ -7,4 +7,6 @@
     public const float ZoneExitSlowDown = 2.5f;
     public const int WallInvisibleLayer = 3;
     public const int EnemyLayer = 6;
+    public const int BulletLayer = 7;
+    public const int PlayerLayer = 8;
 }

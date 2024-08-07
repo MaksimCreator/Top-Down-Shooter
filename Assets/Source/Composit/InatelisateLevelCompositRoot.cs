@@ -13,6 +13,7 @@ public class InatelisateLevelCompositRoot : CompositRoot
     {
         Physics.IgnoreLayerCollision(Constant.EnemyLayer,Constant.EnemyLayer);
         Physics.IgnoreLayerCollision(Constant.EnemyLayer, Constant.WallInvisibleLayer);
+        Physics.IgnoreLayerCollision(Constant.BulletLayer, Constant.PlayerLayer);
 
         Map = new MapBounds(_map,_zoneTransfom,_mapConffig.MinDistanceSpawnZone);
         SpawnerZone spawner = new SpawnerZone(_zoneViewFactory,Map,_mapConffig.MinDistanceSpawnZone);

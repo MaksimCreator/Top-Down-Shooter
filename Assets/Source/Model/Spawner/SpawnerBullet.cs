@@ -14,16 +14,16 @@ public class SpawnerBullet
         _bulletVisiter = new BulletVisiter(Instantiat);
     }
 
-    public Bullet Enable(Bullet bullet, Transform StartPosition)
+    public Bullet Enable(Bullet bullet, Transform StartPosition,Vector3 targetPosition)
     {
         _bulletVisiter.Visit((dynamic)bullet);
         (Bullet,GameObject) pair = _bulletVisiter.CurentPoolObject.Enable(bullet,StartPosition);
-        pair.Item2.transform.Rotate(new Vector3(Input.mousePosition.x,pair.Item2.transform.position.y,Input.mousePosition.z));
+        pair.Item2.transform.LookAt(targetPosition);
 
         if (bullet is ShotgunBullet shotgunBullet)
             pair.Item2.transform.rotation = Quaternion.Euler(0, Random.Range(-shotgunBullet.AngelBullet, shotgunBullet.AngelBullet),0);
 
-        pair.Item1.StartMovemeng(pair.Item2);
+        pair.Item1.StartMovemeng(pair.Item2,targetPosition - StartPosition.position);
         return pair.Item1;
     }
 
@@ -46,17 +46,10 @@ public class SpawnerBullet
         private PoolObject<Bullet> _explosiveBullet;
         private PoolObject<Bullet> _defoltBullet;
 
-        private Action<Bullet, Transform> _instantiate;
-
         public PoolObject<Bullet> CurentPoolObject;
 
         public BulletVisiter(Action<Bullet, Transform> instantiate)
         {
-            if (_explosiveBullet != null)
-                _explosiveBullet.onInstantiat -= _instantiate;
-            if(_defoltBullet != null)
-                _defoltBullet.onInstantiat -= _instantiate;
-
             _explosiveBullet = new();
             _defoltBullet = new();
 

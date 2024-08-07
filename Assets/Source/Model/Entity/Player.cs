@@ -1,10 +1,14 @@
-﻿public sealed class Player : Entity
+﻿using UnityEngine;
+
+public sealed class Player : Entity
 {
     private readonly PlayerHealth _health;
 
-    public Player(PlayerHealth health,float speed) : base(speed)
+    public Player(PlayerHealth health,Transform transfomPlayer,float speed) : base(speed)
     {
         _health = health;
+
+        TryAddTransformEntity(transfomPlayer);
     }
 
     public void TryDeath()

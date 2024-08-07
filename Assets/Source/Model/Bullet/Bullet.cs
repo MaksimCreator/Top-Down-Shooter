@@ -8,7 +8,8 @@ public abstract class Bullet
     public readonly int Damage;
     protected readonly BulletDate Date;
 
-    private Fsm _fsm;
+    private Fsm _fsm = new();
+    private Vector3 _direction;
     private bool _isInitStop = false;
     private bool _isInitMovemeg = false;
 
@@ -20,8 +21,7 @@ public abstract class Bullet
         Damage = damage;
 
         Date = new BulletDate();
-        _fsm = new Fsm().
-            BindState(new FsmStateIdel(_fsm));
+        _fsm.BindState(new FsmStateIdel(_fsm));
     }
 
     public void InitStop(Action<Bullet> stop)
@@ -33,7 +33,7 @@ public abstract class Bullet
         _fsm.BindState(new FsmStateBulletDestroy(() => stop(this), _fsm));
     }
 
-    public void StartMovemeng(GameObject bullet)
+    public void StartMovemeng(GameObject bullet,Vector3 direction)
     {
         if (_isInitMovemeg == false)
         { 
@@ -43,6 +43,7 @@ public abstract class Bullet
         }
 
         Date.IsEnd = false;
+        _direction = direction;
         _fsm.SetState<FsmStateBulletMovemeng>();
     }
 
@@ -50,7 +51,7 @@ public abstract class Bullet
     {
         if (_fsm.IsState<FsmStateBulletMovemeng>())
         {
-            Vector3 direction = BulletTransform.TransformDirection(BulletTransform.forward).normalized * Speed * delta;
+            Vector3 direction = _direction * Speed * delta;
             Date.Direction = GetDirection(direction);
         }
 

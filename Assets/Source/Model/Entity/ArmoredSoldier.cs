@@ -1,6 +1,8 @@
-﻿public class ArmoredSoldier : Enemy
+﻿using UnityEngine;
+
+public class ArmoredSoldier : Enemy
 {
-    public ArmoredSoldier(float speed) : base( speed)
+    public ArmoredSoldier(float speed) : base(speed)
     {
     }
 }

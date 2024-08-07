@@ -16,9 +16,8 @@ public class PlayerCompositRoot : CompositRoot
     [SerializeField] private float _cooldownSpawnGain;
     [SerializeField] private float _cooldownDestroyBonus;
 
-    private Fsm _playerFsmMovemeng = new();
-    private Fsm _playerFsmRotate = new();
-    private Fsm _playerFsmAttack = new();
+    private readonly Fsm _playerFsmMovemeng = new();
+    private readonly Fsm _playerFsmAttack = new();
     private PlayerHealth _health;
     private InputRouter _router;
 
@@ -32,11 +31,12 @@ public class PlayerCompositRoot : CompositRoot
     {
         Wallet = new Wallet();
 
-        Gun StartWeapon = new Gun(_startPositionWeapon,_allWeaponConffig.GunConffig.Damage,_allWeaponConffig.GunConffig.BulletPerSecond);
-        Inventary = new Inventary().BindWeapon(StartWeapon,_allSimulated.BulletSimulation.Simulate);
         _health = new PlayerHealth(_playerConffig.Health);
-        Player = new Player(_health,_playerConffig.Speed);
-        PlayerMovemeng movemeng = new PlayerMovemeng(_playerConffig.RotationPerSecond, _playerFsmRotate, Player);
+        Player = new Player(_health,_player,_playerConffig.Speed);
+        PlayerMovemeng movemeng = new PlayerMovemeng(_playerConffig.RotationPerSecond, Player,_player);
+
+        Gun StartWeapon = new Gun(_startPositionWeapon,_allWeaponConffig.GunConffig.Damage,_allWeaponConffig.GunConffig.BulletPerSecond);
+        Inventary = new Inventary(_allSimulated.BulletSimulation.Simulate,movemeng.Rotate).BindWeapon(StartWeapon);
 
         SpawnerBonus = new SpawnerBonus(_weaponViewFactroy, _gainViewFactroy, Inventary, _levelCompositRoot.Map,
             _startPositionWeapon,_allGainConffig,_allWeaponConffig,_cooldownSpawnWeapon,_cooldownSpawnGain,_cooldownDestroyBonus);
@@ -72,10 +72,6 @@ public class PlayerCompositRoot : CompositRoot
         _playerFsmMovemeng
             .BindState(new FsmStateIdel(_playerFsmMovemeng))
             .BindState(new FsmStateMovemeng(_player,movemeng,_playerFsmMovemeng));
-
-        _playerFsmRotate
-            .BindState(new FsmStateIdel(_playerFsmRotate))
-            .BindState(new FsmStateRotate(movemeng,_playerFsmRotate));
 
         _playerFsmAttack
             .BindState(new FsmStateIdel(_playerFsmAttack))

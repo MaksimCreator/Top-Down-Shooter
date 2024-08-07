@@ -97,6 +97,7 @@
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TextMeshSpawner.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark01.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark02.cs" />
+    <Compile Include="Assets\Source\View\Fsm\FsmStateEnemyMovemeng.cs" />
     <Compile Include="Assets\Source\Model\Spawner\SpawnerBonus.cs" />
     <Compile Include="Assets\Source\Model\Bullet\ShotgunBullet.cs" />
     <Compile Include="Assets\Source\Composit\PhysicsCompositRoot.cs" />
@@ -120,6 +121,8 @@
     <Compile Include="Assets\Source\Composit\PlayerCompositRoot.cs" />
     <Compile Include="Assets\Source\View\Fsm\FsmStateBulletDestroy.cs" />
     <Compile Include="Assets\Source\Model\Weapon\Shotgun.cs" />
+    <Compile Include="Assets\Source\Model\Interface\ITargetPosition.cs" />
+    <Compile Include="Assets\Source\ScriptableObject\EnemySpawnreConffig.cs" />
     <Compile Include="Assets\Source\View\Factory\WeaponViewFactory.cs" />
     <Compile Include="Assets\Source\Model\Spawner\SpawnerBullet.cs" />
     <Compile Include="Assets\Source\Model\Wallet.cs" />
@@ -138,18 +141,17 @@
     <Compile Include="Assets\Source\Model\Gain\Gain.cs" />
     <Compile Include="Assets\Source\View\Factory\ViewFactroy.cs" />
     <Compile Include="Assets\Source\Input\InputPlayer.cs" />
-    <Compile Include="Assets\Source\Model\Interface\IRotation.cs" />
     <Compile Include="Assets\Source\View\Fsm\FsmState.cs" />
     <Compile Include="Assets\Source\Composit\CompositRoot.cs" />
     <Compile Include="Assets\Source\Model\Inventary.cs" />
     <Compile Include="Assets\Source\Composit\InatelisateLevelCompositRoot.cs" />
-    <Compile Include="Assets\Source\Composit\EnemyCompositRoot.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\ObjectSpin.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_PhoneNumberValidator.cs" />
     <Compile Include="Assets\Source\ScriptableObject\WeaponConnfig.cs" />
     <Compile Include="Assets\Source\Model\Bullet\DefoltBullet.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\VertexJitter.cs" />
     <Compile Include="Assets\Source\Model\Interface\Visiter\IBulletVisiter.cs" />
+    <Compile Include="Assets\Source\View\Fsm\FsmStateRotate.cs" />
     <Compile Include="Assets\Source\Model\Interface\Visiter\IEnemyVisiter.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TextConsoleSimulator.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TeleType.cs" />
