@@ -20,12 +20,12 @@ public class SpawnerZone
     {
         while (true)
         {
-            Transform randomPosition = _mapBounds.GenerateRandomPositionWithinBounds(MapBounds.Generate.Zone);
+            Vector3 randomPosition = _mapBounds.GenerateRandomPositionWithinBounds(MapBounds.Generate.Zone);
 
-            if (CheckDistance(randomPosition.position))
+            if (CheckDistance(randomPosition))
             {
-                _generatedZones.Add(randomPosition.position);
-                _zoneViewFactory.Creat(zone, randomPosition);
+                _generatedZones.Add(randomPosition);
+                _zoneViewFactory.Creat(zone, randomPosition,Quaternion.identity);
                 break;
             }
         }

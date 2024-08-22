@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c9eaf4269d978d44a3aea10fb523838, type: 3}
+  m_Name: All Weapon Game
+  m_EditorClassIdentifier: 
+  _automatonConffig: {fileID: 11400000, guid: 145b18a44d08a0f41a7c8ab7dd4d970d, type: 2}
+  _gunConffig: {fileID: 11400000, guid: dfd39ef0203a3c5478ecfca0e87ee8cc, type: 2}
+  _grenadeLauncherConffig: {fileID: 11400000, guid: ffc3780628089c447b1a415ff7469a42, type: 2}
+  _shotgunConffig: {fileID: 11400000, guid: 81e70f5f6d45bb64c831ff26d8bb5657, type: 2}

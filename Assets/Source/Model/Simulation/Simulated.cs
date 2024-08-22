@@ -1,23 +1,46 @@
-﻿using System.Collections.Generic;
-using System;
+﻿using System;
+using System.Linq;
+using System.Collections.Generic;
 
-public abstract class Simulated<T> : IUpdateble where T : class
+public abstract class Simulated<T> : ISimulated where T : class
 {
-    private HashSet<T> _allEntity = new();
-
-    protected IEnumerable<T> Entities => _allEntity;
+    private HashSet<EntityManagerSimulated<T>> _entitys;
 
     protected event Action<IEnumerable<T>> OnDistroy;
 
-    public abstract void Update(float delta);
+    protected bool isActive { get; private set; } = true;
+    protected IEnumerable<T> Entitys => _entitys.Select(Manager => Manager.Entitys);
 
-    protected void Simulate(T Entity)
-    => _allEntity.Add(Entity);
+    public virtual void StopSimulate()
+    => isActive = false;
+
+    public virtual void StartSimulate()
+    => isActive = true;
+
+    public void Update(float delta)
+    {
+        if (delta <= 0)
+            throw new InvalidOperationException();
+
+        onUpdate(delta);
+    }
 
     public void AllStop()
     {
-        OnDistroy.Invoke(Entities);
-        _allEntity.Clear();
+        OnDistroy.Invoke(Entitys);
+        _entitys.Clear();
     }
-    
+
+    protected void TryAddEntity(EntityManagerSimulated<T> Entity)
+    => _entitys.Add(Entity);
+   
+    protected abstract void onUpdate(float delta);
+
+    protected bool IsUpdate(float delta)
+    {
+        if (delta <= 0)
+            throw new InvalidOperationException();
+
+        return isActive;
+    }
 }

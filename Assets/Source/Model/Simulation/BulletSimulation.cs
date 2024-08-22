@@ -1,6 +1,5 @@
-﻿using System.Collections.Generic;
-using System;
-using UnityEngine;
+﻿using UnityEngine;
+using System.Collections.Generic;
 
 public class BulletSimulation : Simulated<Bullet>
 {
@@ -9,26 +8,19 @@ public class BulletSimulation : Simulated<Bullet>
     public BulletSimulation(SpawnerBullet spawner)
     {
         _spawner = spawner;
-
         OnDistroy += Distroy;
     }
 
     public void Simulate(Bullet bullet, Transform startPosition,Vector3 targetPosition)
     {
+        if (IsSimulated() == false)
+            return;
+
         Bullet curentBullet = _spawner.Enable(bullet, startPosition,targetPosition);
 
-        Simulate(curentBullet);
+        TryAddEntity(curentBullet);
 
         curentBullet.InitStop(Stop);
-    }
-
-    public override void Update(float delta)
-    {
-        if (delta <= 0)
-            throw new InvalidOperationException();
-
-        foreach (Bullet bullet in Entities)
-            bullet.Update(delta);
     }
 
     public void Stop(Bullet bullet)
@@ -37,9 +29,40 @@ public class BulletSimulation : Simulated<Bullet>
         bullet.OnEnd();
     }
 
+    protected override void onUpdate(float delta)
+    {
+        foreach(var bullet in Entitys)
+            bullet.Update(delta);
+    }
+
     private void Distroy(IEnumerable<Bullet> bullets)
     {
+        StopSimulate();
         _spawner.Distroy(bullets);
         OnDistroy -= Distroy;
+    }
+}
+public abstract class EntityManagerSimulated<T> where T : class
+{
+    public readonly T Entitys;
+    protected readonly Fsm _fsm;
+
+    public EntityManagerSimulated(T entitys, Fsm fsm)
+    {
+        Entitys = entitys;
+        _fsm = fsm;
+    }
+}
+public class BulletManagerSimulated : EntityManagerSimulated<Bullet>
+{
+    public BulletManagerSimulated(Bullet entitys, Fsm fsm) : base(entitys, fsm)
+    {
+    }
+}
+public class EnemyManagerSimulated : EntityManagerSimulated<Enemy>
+{
+    public EnemyManagerSimulated(Enemy entitys, Fsm fsm) : base(entitys, fsm)
+    {
+
     }
 }

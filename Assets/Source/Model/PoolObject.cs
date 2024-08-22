@@ -8,7 +8,7 @@ public class PoolObject<T> where T : class
     private readonly List<GameObject> _poolGameObject = new();
     private readonly List<Transform> _poolTransform = new();
 
-    public event Action<T,Transform> onInstantiat;
+    public event Action<T,Vector3,Quaternion> onInstantiat;
 
     public void AddObject(T model, GameObject prefab)
     {
@@ -18,25 +18,25 @@ public class PoolObject<T> where T : class
         _poolTransform.Add(prefab.transform);
     }
 
-    public (T,GameObject) Enable(T prefab,Transform transform)
+    public (T,GameObject) Enable(T prefab,Vector3 position,Quaternion rotation)
     {
         for (int i = 0; i < _poolTransform.Count; i++)
         {
             if (_poolGameObject[i].activeSelf == false)
             {
-                _poolTransform[i].position = transform.position;
+                _poolTransform[i].position = position;
                 _poolGameObject[i].SetActive(true);
                 return (_poolModel[i], _poolGameObject[i]);
             }
         }
 
         int Count = _poolGameObject.Count;
-        onInstantiat.Invoke(prefab,transform);
+        onInstantiat.Invoke(prefab,position,rotation);
 
         if (Count == _poolModel.Count)
             throw new InvalidOperationException("Новый обект недобавлен в PoolObject");
 
-        _poolTransform[_poolTransform.Count - 1].position = transform.position;
+        _poolTransform[_poolTransform.Count - 1].position = position;
         _poolGameObject[_poolGameObject.Count - 1].SetActive(true);
         return(_poolModel[_poolGameObject.Count - 1], _poolGameObject[_poolGameObject.Count - 1]);
     }

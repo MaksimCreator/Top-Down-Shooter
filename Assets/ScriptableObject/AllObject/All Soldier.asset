@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2002646e6637144469e048402af40c94, type: 3}
+  m_Name: All Soldier
+  m_EditorClassIdentifier: 
+  _armorSoldier: {fileID: 11400000, guid: 619db962b31820c439e066da318a8be6, type: 2}
+  _nimbleSoldier: {fileID: 11400000, guid: 975229add9356f141b168d1288dec121, type: 2}
+  _privateSoldier: {fileID: 11400000, guid: 28612ca4d61692e4d86efca29936704a, type: 2}
