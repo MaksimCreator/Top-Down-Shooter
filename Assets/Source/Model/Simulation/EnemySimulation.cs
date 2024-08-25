@@ -1,27 +1,48 @@
-﻿using System.Collections.Generic;
+﻿using Model;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
-public class EnemySimulation : Simulated<Enemy>
+public class EnemySimulation : Simulated<IEnemyData,Enemy>
 {
     private readonly SpawnerEnemy _spawner;
+    private readonly Action<IEnemyData> _addNewEnemy;
 
-    public bool CanSimulated => isActive;
+    private Enemy _curentEnemy;
 
-    public EnemySimulation(EnemyViewFactory factory, Wallet walletPlayer,AllSoldier allSoldier,Camera camera,MapBounds mapBounds,Player player,float cooldownUpdateSpawnEnemy,float deltaTimeDelay, float startCooldownSpawnEnemy,float minCooldownSpawn)
+    public EnemySimulation(Action<IEnemyData> AddNewEnemy,ServiceLocator serviceLocator,Wallet walletPlayer,Camera camera,Player player)
     {
-        _spawner = new SpawnerEnemy(this, factory,walletPlayer,allSoldier,camera,
-        mapBounds,player,cooldownUpdateSpawnEnemy,startCooldownSpawnEnemy,deltaTimeDelay,minCooldownSpawn);
+        _spawner = new SpawnerEnemy(Simulate,CanSimulated,this,serviceLocator.GetSevice<EnemyViewFactory>(),
+            walletPlayer,serviceLocator.GetSevice<AllSoldierConffig>(),camera,serviceLocator.GetSevice<IMapBoundsService>()
+            ,player,serviceLocator.GetSevice<EnemySpawnreConffig>());
+
+        _addNewEnemy = AddNewEnemy;
         OnDistroy += Destroy;
     }
-
-    public void Simulate(EnemyManagerSimulated enemy)
-    => TryAddEntity(enemy);
-
+    
     public void Enable()
     => _spawner.Enable();
 
     public void Disable()
     => _spawner.Disable();
+
+    public override void StartSimulate()
+    {
+        base.StartSimulate();
+        _spawner.StartTimer();
+
+        foreach (var enemy in Entitys)
+            enemy.isMoveming = true;
+    }
+
+    public override void StopSimulate()
+    {
+        base.StopSimulate();
+        _spawner.StopTimer();
+
+        foreach (var enemy in Entitys)
+            enemy.isMoveming = false;
+    }
 
     protected override void onUpdate(float delta)
     {
@@ -29,16 +50,11 @@ public class EnemySimulation : Simulated<Enemy>
             enemy.Update(delta);
     }
 
-    public override void StartSimulate()
-    {
-        base.StartSimulate();
-        _spawner.StartTimer();
-    }
-
-    public override void StopSimulate()
-    {
-        base.StopSimulate();
-        _spawner.StopTimer();
+    private void Simulate(Enemy enemy)
+    { 
+        TryAddEntity(enemy, enemy);
+        _curentEnemy = enemy;
+        _addNewEnemy.Invoke(enemy);
     }
 
     private void Destroy(IEnumerable<Enemy> enemys)
@@ -46,6 +62,10 @@ public class EnemySimulation : Simulated<Enemy>
         Disable();
         StopSimulate();
         _spawner.Destroy(enemys);
+
+        foreach (var enemy in enemys)
+            enemy.isMoveming = false;
+
         OnDistroy -= Destroy;
     }
 }

@@ -4,12 +4,12 @@ using System.Collections.Generic;
 public class SpawnerZone
 {
     private readonly ZoneViewFactory _zoneViewFactory;
-    private readonly MapBounds _mapBounds;
+    private readonly IMapBoundsService _mapBounds;
     private readonly int _minDistance;
 
     private List<Vector3> _generatedZones = new();
 
-    public SpawnerZone(ZoneViewFactory zoneViewFactory, MapBounds mapBounds, int minDistance)
+    public SpawnerZone(ZoneViewFactory zoneViewFactory, IMapBoundsService mapBounds, int minDistance)
     {
         _zoneViewFactory = zoneViewFactory;
         _mapBounds = mapBounds;

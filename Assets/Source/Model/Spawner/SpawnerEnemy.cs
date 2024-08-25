@@ -9,26 +9,33 @@ public class SpawnerEnemy
     private readonly EnemySimulation _enemySimulation;
     private readonly EnemyViewFactory _enemyViewFactory;
     private readonly Wallet _walletPlayer;
-    private readonly AllSoldier _enemyConffig;
+    private readonly AllSoldierConffig _enemyConffig;
+
     private readonly EnemyVisiter _enemyVisiter; 
     private readonly EnemyTimer _timer;
     private readonly Camera _camera;
     private readonly Implementation _implementation;
-    private readonly (Func<Enemy>,int)[] _variantsEnemy;
+    private readonly (Func<Enemy>,int)[] _variantsEnemyAndChanceToSpawn;
 
-    public SpawnerEnemy(EnemySimulation simulation,EnemyViewFactory factory, Wallet walletPlayer,AllSoldier allSoldire,Camera camera,MapBounds mapBounds,Player player, float cooldownUpdateSpawnEnemy, float startCooldownSpawnEnemy, float deltaTimeDelay, float minCooldownSpawn)
+    private readonly Func<bool> _canSimulated;
+    private readonly Action<Enemy> _simulatedEnemy;
+
+    public SpawnerEnemy(Action<Enemy> simulatedEnemy,Func<bool> canSimulated,EnemySimulation simulation,EnemyViewFactory factory, Wallet walletPlayer,AllSoldierConffig allSoldire,Camera camera,IMapBoundsService mapBounds,Player player,EnemySpawnreConffig enemySpawnConffig)
     {
+        _simulatedEnemy = simulatedEnemy;
         _enemySimulation = simulation;
         _enemyViewFactory = factory;
         _walletPlayer = walletPlayer;
         _enemyConffig = allSoldire;
         _camera = camera;
+        _canSimulated = canSimulated;
 
-        _timer = new EnemyTimer(SpawnEnemy,startCooldownSpawnEnemy,cooldownUpdateSpawnEnemy, deltaTimeDelay, minCooldownSpawn);
+        _timer = new EnemyTimer(SpawnEnemy,enemySpawnConffig.StartCooldownSpawnEnemy,enemySpawnConffig.CooldownUpdateSpawnEnemy,
+            enemySpawnConffig.DeltaTimeDelay, enemySpawnConffig.MinCooldownSpawn);
         _enemyVisiter = new EnemyVisiter(InstantiateEnemy);
         _implementation = new Implementation(_enemyVisiter, player, _camera, mapBounds);
 
-        _variantsEnemy = new (Func<Enemy>, int)[]
+        _variantsEnemyAndChanceToSpawn = new (Func<Enemy>, int)[]
         {
             (CreatPrivateSoldier,6),
             (CreatArmoredSoldier,9),
@@ -50,10 +57,10 @@ public class SpawnerEnemy
 
     public void Destroy(IEnumerable<Enemy> enemys)
     {
-        foreach (var entity in enemys)
+        foreach (var enemy in enemys)
         {
-            Enemy enemy = entity as Enemy;
             _enemyViewFactory.Destroy(enemy);
+            enemy.Health.onDeath -= (enemy) => SubscratePerformed(enemy, enemy.Health);
         }
     }
 
@@ -62,17 +69,17 @@ public class SpawnerEnemy
         if (_camera.orthographic == false)
             throw new InvalidOperationException();
 
-        if (_enemySimulation.CanSimulated == false)
+        if (_canSimulated.Invoke())
             return;
 
         int randomNumber = Random.Range(1, 11);
 
-        for (int i = 0; i < _variantsEnemy.Length; i++)
+        for (int i = 0; i < _variantsEnemyAndChanceToSpawn.Length; i++)
         {
-            if (randomNumber <= _variantsEnemy[i].Item2)
+            if (randomNumber <= _variantsEnemyAndChanceToSpawn[i].Item2)
             {
-                Enemy enemy = _implementation.EnableEnemy(_variantsEnemy[i].Item1.Invoke());
-                _enemySimulation.Simulate(enemy);
+                Enemy enemy = _implementation.EnableEnemy(_variantsEnemyAndChanceToSpawn[i].Item1.Invoke());
+                _simulatedEnemy.Invoke(enemy);
                 return;
             }
         }
@@ -91,8 +98,8 @@ public class SpawnerEnemy
         EnemyHealth health = new EnemyHealth(_enemyConffig.ArmoredSoldier.MaxHealth, soldier);
         
         soldier.BindHealth(health);
-        SubscratePerformed(health);
-        
+        health.onDeath += (enemy) => SubscratePerformed(enemy, enemy.Health);
+
         return soldier;
     }
 
@@ -102,7 +109,7 @@ public class SpawnerEnemy
         EnemyHealth health = new EnemyHealth(_enemyConffig.ArmoredSoldier.MaxHealth, soldier);
 
         soldier.BindHealth(health);
-        SubscratePerformed(health);
+        health.onDeath += (enemy) => SubscratePerformed(enemy,enemy.Health);
 
         return soldier;
     }
@@ -113,13 +120,17 @@ public class SpawnerEnemy
         EnemyHealth health = new EnemyHealth(_enemyConffig.ArmoredSoldier.MaxHealth, soldier);
 
         soldier.BindHealth(health);
-        SubscratePerformed(health);
+        health.onDeath += (enemy) => SubscratePerformed(enemy, enemy.Health);
 
         return soldier;
     }
 
-    private void SubscratePerformed(EnemyHealth health)
-    => health.onDeath += _walletPlayer.onKill;
+    private void SubscratePerformed(Enemy enemy, EnemyHealth health)
+    {
+        _enemyVisiter.TrySwitchPoolObject(enemy);
+        health.onDeath += _enemyVisiter.PoolObject.Disable;
+        health.onDeath += _walletPlayer.onKill;
+    }
 
     #endregion
 
@@ -133,7 +144,7 @@ public class SpawnerEnemy
 
         private readonly Vector2 _offset = new Vector2(0.35f, 0.35f);
 
-        public Implementation(EnemyVisiter visiter, Player player, Camera camera,MapBounds bounds)
+        public Implementation(EnemyVisiter visiter, Player player, Camera camera,IMapBoundsService bounds)
         {
             _visiter = visiter;
             _player = player;
@@ -210,7 +221,7 @@ public class SpawnerEnemy
         => PoolObject = _armorSoldier;
     }
 
-    private class EnemyTimer
+    private class EnemyTimer : EntitySpawnTimer
     {
         private readonly Action _spawnEnemy;
         private readonly float _cooldownUpdateSpawnEnemy;
@@ -221,11 +232,11 @@ public class SpawnerEnemy
         private CompositeDisposable _updateTime;
         private CompositeDisposable _enemyTimer;
         private CompositeDisposable _updateTimer;
-        private CompositeDisposable[] _allDisposables;
+        private (CompositeDisposable, float, float)[] _compositDisposableByTimeByDivisor;
 
         private float _cooldownSpawnEnemy;
-        private float _deltaEnemySpawnTime;
-        private float _deltaUpdateTime;
+        private float _timeBefirceCreatEnemy;
+        private float _timeBeforcUpdateCreatEnemy;
 
         private bool _isUpdate = false;
 
@@ -274,24 +285,23 @@ public class SpawnerEnemy
 
         public void StopTimer()
         {
-            _allDisposables = new CompositeDisposable[2]
+            _compositDisposableByTimeByDivisor = new (CompositeDisposable, float, float)[2]
             {
-                _enemyTimer,
-                _updateTimer,
+                (_enemyTimer,_timeBefirceCreatEnemy,_cooldownSpawnEnemy),
+                (_updateTimer,_timeBeforcUpdateCreatEnemy,_cooldownUpdateSpawnEnemy)
             };
-            
-            _deltaEnemySpawnTime = Timers.GetTime(_enemyTimer) % _cooldownSpawnEnemy;
-            _deltaUpdateTime = Timers.GetTime(_updateTimer) % _cooldownUpdateSpawnEnemy;
 
-            Timers.StopRange(_allDisposables);
+            StopTimer(ref _compositDisposableByTimeByDivisor);
 
             Disable();
         }
 
         public void StartTimer()
         {
-            Timers.StartTimer(_deltaEnemySpawnTime,() =>
+            Timers.StartTimer(_timeBefirceCreatEnemy,() =>
             {
+                _spawnEnemy();
+                TryUpdateTimer();
                 _enemySpawner = Timers.StartInfiniteTimer(_cooldownSpawnEnemy, () =>
                 {
                     _spawnEnemy();
@@ -299,7 +309,7 @@ public class SpawnerEnemy
                 });
             });
 
-            Timers.StartTimer(_deltaUpdateTime, () =>
+            Timers.StartTimer(_timeBeforcUpdateCreatEnemy, () =>
             {
                 _updateTime = Timers.StartInfiniteTimer(_cooldownUpdateSpawnEnemy, () =>
                 {
@@ -317,8 +327,8 @@ public class SpawnerEnemy
                 });
             });
 
-            _enemyTimer = Timers.StartTimer(_deltaEnemySpawnTime);
-            _updateTimer = Timers.StartTimer(_deltaUpdateTime);
+            _enemyTimer = Timers.StartTimer(_timeBefirceCreatEnemy);
+            _updateTimer = Timers.StartTimer(_timeBeforcUpdateCreatEnemy);
         }
 
         private void TryUpdateTimer()

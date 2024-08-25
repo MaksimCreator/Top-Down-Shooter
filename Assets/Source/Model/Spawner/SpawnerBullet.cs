@@ -6,12 +6,12 @@ using Random = UnityEngine.Random;
 
 public class SpawnerBullet
 {
-    private readonly IViewFactoryService<Bullet> _factory;
+    private readonly BulletViewFactory _factory;
     private BulletVisiter _bulletVisiter;
 
     public SpawnerBullet(ServiceLocator locator)
     {
-        _factory = locator.GetSevice<IViewFactoryService<Bullet>>();
+        _factory = locator.GetSevice<BulletViewFactory>();
         _bulletVisiter = new BulletVisiter(Instantiat);
     }
 

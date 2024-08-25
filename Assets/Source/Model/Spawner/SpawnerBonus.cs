@@ -11,34 +11,31 @@ public class SpawnerBonus
     private readonly WeaponViewFactory _weaponViewFactory;
     private readonly GainViewFactory _gainViewFactory;
     private readonly Inventary _playerInventary;
-    private readonly MapBounds _mapBounds;
+    private readonly AllWeaponGameConffig _allWeaponGame;
+    private readonly AllGainConffig _allGain;
     private readonly Transform _muzzelPositionWeapon;
-    private readonly AllWeaponGame _allWeaponGame;
-    private readonly AllGain _allGain;
+    private readonly IMapBoundsService _mapBounds;
+
     private readonly Func<Gain>[] _variantsGain;
     private readonly Func<Weapon>[] _variantsWeapon;
     private readonly WeaponVisiter _weaponVisiter;
-    private readonly float _cooldownSpawnWeapon;
-    private readonly float _cooldownSpawnGain;
-    private readonly float _cooldownDestryBonus;
+    private readonly EnemyTimer _enemyTimer;
 
-    private List<CompositeDisposable> _disposables = new List<CompositeDisposable>();
     #endregion
 
-    public SpawnerBonus(WeaponViewFactory weaponViewFactory, GainViewFactory gainViewFactory, Inventary playerInventary,MapBounds map,Transform muzzelPosition,AllGain allGain,AllWeaponGame allWeaponGame, float cooldownSpawnWeapon, float cooldownSpawnGain,float cooldownDestroyBonus)
+    public SpawnerBonus(ServiceLocator locator,Inventary inventary,Transform muzzelPosition)
     {
-        _weaponViewFactory = weaponViewFactory;
-        _gainViewFactory = gainViewFactory;
-        _playerInventary = playerInventary;
-        _mapBounds = map;
-        _muzzelPositionWeapon = muzzelPosition;
-        _allWeaponGame = allWeaponGame;
-        _allGain = allGain;
-        _cooldownSpawnWeapon = cooldownSpawnWeapon;
-        _cooldownSpawnGain = cooldownSpawnGain;
-        _cooldownDestryBonus = cooldownDestroyBonus;
+        _playerInventary = inventary;
+        _allGain = locator.GetSevice<AllGainConffig>();
+        _allWeaponGame = locator.GetSevice<AllWeaponGameConffig>();
+        _weaponViewFactory = locator.GetSevice<WeaponViewFactory>();
+        _gainViewFactory = locator.GetSevice<GainViewFactory>();
+        _mapBounds = locator.GetSevice<IMapBoundsService>();
 
-        _weaponVisiter = new();
+        _muzzelPositionWeapon = muzzelPosition;
+
+        _weaponVisiter = new WeaponVisiter();
+        _enemyTimer = new EnemyTimer(CreatWeapon,CreatGain,DestroyWeapon,DestroyGain, locator.GetSevice<BonusSpawnerConffig>());
         _variantsGain = new Func<Gain>[]
         {
             CreatAccalerationGain,
@@ -54,60 +51,55 @@ public class SpawnerBonus
     }
 
     public void Enable()
-    {
-        _disposables.Add(Timers.StartInfiniteTimer(_cooldownSpawnWeapon, () =>
-        {
-            Func<Weapon>[] variants = GenerateNewVariants();
-            int randomVariants = Random.Range(0, variants.Length);
-
-            Vector3 position = _mapBounds.GenerateRandomPositionWithinBounds();
-            Weapon weapon = variants[randomVariants].Invoke();
-
-            _weaponViewFactory.Creat(weapon, position,Quaternion.identity);
-            Timers.StartTimer(_cooldownDestryBonus, () => _weaponViewFactory.Destroy(weapon));
-        }));
-
-        _disposables.Add(Timers.StartInfiniteTimer(_cooldownSpawnGain, () => 
-        {
-            int randomVariants = Random.Range(0, _variantsGain.Length);
-            Vector3 position = _mapBounds.GenerateRandomPositionWithinBounds();
-
-            Gain gain = _variantsGain[randomVariants].Invoke();
-            _gainViewFactory.Creat(gain, position,Quaternion.identity);
-
-            Timers.StartTimer(_cooldownDestryBonus, () => _gainViewFactory.Destroy(gain));
-        }));
-    }
+    => _enemyTimer.Enable();
 
     public void Disable()
-    {
-        foreach (CompositeDisposable disposable in _disposables)
-            disposable.Clear();
+    => _enemyTimer.Disable();
 
-        _disposables.Clear();
-    }
+    public void StopTimer()
+    => _enemyTimer.StopTimer();
 
-    public void Destroy(Weapon prefab)
-    => _weaponViewFactory.Destroy(prefab);
-
-    public void Destroy(Gain prefab)
-    => _gainViewFactory.Destroy(prefab);
+    public void StartTimer()
+    => _enemyTimer.StartTimer();
 
     #region CreatEntity
-    public void Creat(Weapon weapon,Transform parent)
-    => _weaponViewFactory.Creat(weapon, parent.position, parent.rotation, parent: parent, IsPhysics:false);
 
-    private void Creat(Weapon weapon)
-    => _weaponViewFactory.Creat(weapon, _mapBounds.GenerateRandomPositionWithinBounds(), Quaternion.identity);
 
-    private void Creat(Gain gain)
-    =>  _gainViewFactory.Creat(gain, _mapBounds.GenerateRandomPositionWithinBounds(), Quaternion.identity);
+    private Weapon CreatWeapon()
+    {
+        Func<Weapon>[] variants = GenerateNewVariants();
+        int randomVariants = Random.Range(0, variants.Length);
+
+        Vector3 position = _mapBounds.GenerateRandomPositionWithinBounds();
+        Weapon weapon = variants[randomVariants].Invoke();
+
+        _weaponViewFactory.Creat(weapon, position, Quaternion.identity);
+
+        return weapon;
+    }
+
+    private Gain CreatGain()
+    {
+        int randomVariants = Random.Range(0, _variantsGain.Length);
+        Vector3 position = _mapBounds.GenerateRandomPositionWithinBounds();
+
+        Gain gain = _variantsGain[randomVariants].Invoke();
+        _gainViewFactory.Creat(gain, position, Quaternion.identity);
+
+        return gain;
+    }
+
+    private void DestroyWeapon(Weapon weapon)
+    => _weaponViewFactory.Destroy(weapon);
+
+    private void DestroyGain(Gain gain)
+    => _gainViewFactory.Destroy(gain);
 
     private Automaton CreatAutomationWeapon()
     => new Automaton(_muzzelPositionWeapon, _allWeaponGame.AutomatonConffig.Damage, _allWeaponGame.AutomatonConffig.BulletPerSecond,_allWeaponGame.AutomatonConffig.NumberBulletPerShoot);
 
     private GrenadeLauncher CreatGrenadeLauncherWeapon()
-    => new GrenadeLauncher(_muzzelPositionWeapon,_allWeaponGame.GrenadeLauncherConffig.Damage,_allWeaponGame.GrenadeLauncherConffig.BulletPerSecond,_allWeaponGame.GrenadeLauncherConffig.NumberBulletPerShoot);
+    => new GrenadeLauncher(_allWeaponGame.GrenadeLauncherConffig.ExplosionRadius,_muzzelPositionWeapon,_allWeaponGame.GrenadeLauncherConffig.Damage,_allWeaponGame.GrenadeLauncherConffig.BulletPerSecond,_allWeaponGame.GrenadeLauncherConffig.NumberBulletPerShoot);
 
     private Gun CreatGunWeapon()
     => new Gun(_muzzelPositionWeapon, _allWeaponGame.GunConffig.Damage, _allWeaponGame.GunConffig.BulletPerSecond, _allWeaponGame.GunConffig.NumberBulletPerShoot);
@@ -121,6 +113,7 @@ public class SpawnerBonus
     private Invulnerability CreatInvulnerabilityGain()
     => new Invulnerability(_allGain.CooldownInvulnerabilityGain);
 
+    
     #endregion
 
     private Func<Weapon>[] GenerateNewVariants()
@@ -140,6 +133,105 @@ public class SpawnerBonus
         }
 
         return variants;
+    }
+
+    private class EnemyTimer : EntitySpawnTimer
+    {
+        private readonly Func<Weapon> _creatWeapon;
+        private readonly Func<Gain> _creatGain;
+        private readonly Action<Weapon> _destroyWeapon;
+        private readonly Action<Gain> _destroyGain;
+
+        private readonly BonusSpawnerConffig _bonusSpawnerConffig;
+
+        private List<CompositeDisposable> _allCompositDisposable = new List<CompositeDisposable>();
+
+        private CompositeDisposable _destroyWeaponTimer;
+        private CompositeDisposable _destroyGainTimer;
+        private CompositeDisposable _weaponTimer;
+        private CompositeDisposable _gainTimer;
+        private (CompositeDisposable, float, float)[] _compositDisposableByTimeByDivisor;
+
+        private float _timeBeforeCreatWeapon;
+        private float _timeBeforeCreatGain;
+
+        public EnemyTimer(Func<Weapon> creatWeapon, Func<Gain> creatGain, Action<Weapon> destroyWeapon, Action<Gain> destroyGain, BonusSpawnerConffig bonusSpawnerConffig)
+        {
+            _bonusSpawnerConffig = bonusSpawnerConffig;
+            _destroyWeapon = destroyWeapon;
+            _creatWeapon = creatWeapon;
+            _destroyGain = destroyGain;
+            _creatGain = creatGain;
+        }
+
+        public void Enable()
+        {
+            StartCreatMethodWeapon();
+            StartCreatMethodGain();
+            StartTimers();
+            InitAllCompositDisposable();
+        }
+
+        public void Disable()
+        {
+            for (int i = 0; i < _allCompositDisposable.Count; i++)
+            {
+                _allCompositDisposable[i].Clear();
+                _allCompositDisposable[i] = new();
+            }
+
+            _allCompositDisposable = new();
+        }
+
+        public void StopTimer()
+        {
+            _compositDisposableByTimeByDivisor = new (CompositeDisposable, float, float)[2]
+            {
+                (_destroyWeaponTimer,_timeBeforeCreatWeapon,_bonusSpawnerConffig.CooldownSpawnWeapon),
+                (_destroyGainTimer,_timeBeforeCreatGain,_bonusSpawnerConffig.CooldownSpawnGain)
+            };
+
+            StopTimer(ref _compositDisposableByTimeByDivisor);
+
+            Disable();
+        }
+
+        public void StartTimer()
+        {
+            _allCompositDisposable.Add(Timers.StartTimer(_timeBeforeCreatWeapon, StartCreatMethodWeapon));
+            StartTimers();
+            InitAllCompositDisposable();
+        }
+
+        private void StartTimers()
+        {
+            _allCompositDisposable.Add(_weaponTimer = Timers.StartTimer());
+            _allCompositDisposable.Add(_gainTimer = Timers.StartTimer());
+        }
+
+        private void InitAllCompositDisposable()
+        {
+            _allCompositDisposable.Add(_destroyGainTimer);
+            _allCompositDisposable.Add(_destroyWeaponTimer);
+        }
+
+        private void StartCreatMethodWeapon()
+        {
+            _allCompositDisposable.Add(Timers.StartInfiniteTimer(_bonusSpawnerConffig.CooldownSpawnWeapon, () =>
+            {
+                Weapon weapon = _creatWeapon.Invoke();
+                _destroyWeaponTimer = Timers.StartTimer(_bonusSpawnerConffig.CooldownDestryBonus, () => _destroyWeapon.Invoke(weapon));
+            }));
+        }
+
+        private void StartCreatMethodGain()
+        {
+            _allCompositDisposable.Add(Timers.StartInfiniteTimer(_bonusSpawnerConffig.CooldownSpawnGain, () =>
+            {
+                Gain gain = _creatGain.Invoke();
+                _destroyGainTimer = Timers.StartTimer(_bonusSpawnerConffig.CooldownDestryBonus, () => _destroyGain.Invoke(gain));
+            }));
+        }
     }
 
     private class WeaponVisiter : IWeaponVisiter

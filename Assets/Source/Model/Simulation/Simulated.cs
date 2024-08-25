@@ -1,46 +1,50 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
 
-public abstract class Simulated<T> : ISimulated where T : class
+public abstract class Simulated<T1, T2> : ISimulated where T2 : class
 {
-    private HashSet<EntityManagerSimulated<T>> _entitys;
+    private readonly Dictionary<T1, T2> _dataEntityPairs = new();
+    private readonly HashSet<T2> _entitys = new();
+    private bool _isActive = true;
 
-    protected event Action<IEnumerable<T>> OnDistroy;
+    protected event Action<IEnumerable<T2>> OnDistroy;
 
-    protected bool isActive { get; private set; } = true;
-    protected IEnumerable<T> Entitys => _entitys.Select(Manager => Manager.Entitys);
+    protected IEnumerable<T2> Entitys => _entitys;
 
     public virtual void StopSimulate()
-    => isActive = false;
+    => _isActive = false;
 
     public virtual void StartSimulate()
-    => isActive = true;
+    => _isActive = true;
 
     public void Update(float delta)
     {
         if (delta <= 0)
             throw new InvalidOperationException();
 
+        if (_isActive == false)
+            return;
+
         onUpdate(delta);
     }
 
     public void AllStop()
     {
-        OnDistroy.Invoke(Entitys);
+        OnDistroy.Invoke(_entitys);
         _entitys.Clear();
     }
 
-    protected void TryAddEntity(EntityManagerSimulated<T> Entity)
-    => _entitys.Add(Entity);
-   
-    protected abstract void onUpdate(float delta);
-
-    protected bool IsUpdate(float delta)
+    protected void TryAddEntity(T1 entityData, T2 entity)
     {
-        if (delta <= 0)
-            throw new InvalidOperationException();
-
-        return isActive;
+        if(_entitys.Add(entity))
+            _dataEntityPairs.Add(entityData, entity);
     }
+   
+    protected T2 GetEntity(T1 interfaceEntity)
+    => _dataEntityPairs[interfaceEntity];
+
+    protected bool CanSimulated()
+    => _isActive;
+
+    protected abstract void onUpdate(float delta);
 }
